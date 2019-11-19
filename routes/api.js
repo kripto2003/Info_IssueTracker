@@ -8,9 +8,9 @@
 
 'use strict';
 
-var expect = require('chai').expect;
-var MongoClient = require('mongodb');
-var ObjectId = require('mongodb').ObjectID;
+const expect = require('chai').expect;
+const MongoClient = require('mongodb');
+const ObjectId = require('mongodb').ObjectID;
 
 const CONNECTION_STRING = process.env.DB; //MongoClient.connect(CONNECTION_STRING, function(err, db) {});
 
@@ -29,9 +29,9 @@ module.exports = function (app) {
       });
     })
     
-    .post(function (req, res){
-      var project = req.params.project;
-      var issue = {
+    .post((req, res)=>{
+      const project = req.params.project;
+      const issue = {
         issue_title: req.body.issue_title,
         issue_text: req.body.issue_text,
         created_on: new Date(),
@@ -41,12 +41,11 @@ module.exports = function (app) {
         open: true,
         status_text: req.body.status_text || ''
       };
-      if(!issue.issue_title || !issue.issue_text || !issue.created_by) {
-        res.send('missing inputs');
-      } else {
-        MongoClient.connect(CONNECTION_STRING, function(err, db) {
-          var collection = db.collection(project);
-          collection.insertOne(issue,function(err,doc){
+      if(!issue.issue_title || !issue.issue_text || !issue.created_by) { res.send('missing inputs'); }
+      else {
+        MongoClient.connect(CONNECTION_STRING, (err, db)=> {
+          const collection = db.collection(project);
+          collection.insertOne(issue,(err,doc)=>{
             issue._id = doc.insertedId;
             res.json(issue);
           });
@@ -54,20 +53,19 @@ module.exports = function (app) {
       }
     })
     
-    .put(function (req, res){
-      var project = req.params.project;
-      var issue = req.body._id;
+    .put((req, res)=>{
+      const project = req.params.project;
+      const issue = req.body._id;
       delete req.body._id;
-      var updates = req.body;
+      const updates = req.body;
       for (var ele in updates) { if (!updates[ele]) { delete updates[ele] } }
-      if (updates.open) { updates.open = String(updates.open) == "true" }
-      if (Object.keys(updates).length === 0) {
-        res.send('no updated field sent');
-      } else {
+      if (updates.open) { updates.open = String(updates.open) === "true" }
+      if (Object.keys(updates).length === 0) { res.send('no updated field sent'); }
+      else {
         updates.updated_on = new Date();
-        MongoClient.connect(CONNECTION_STRING, function(err, db) {
-          var collection = db.collection(project);
-          collection.findAndModify({_id:new ObjectId(issue)},[['_id',1]],{$set: updates},{new: true},function(err,doc){
+        MongoClient.connect(CONNECTION_STRING, (err, db)=> {
+          const collection = db.collection(project);
+          collection.findAndModify({_id:new ObjectId(issue)},[['_id',1]],{$set: updates},{new: true},(err,doc)=>{
             (!err) ? res.send('successfully updated') : res.send('could not update '+issue+' '+err);
             //console.log(doc.value);
           });
@@ -75,15 +73,14 @@ module.exports = function (app) {
       }
     })
     
-    .delete(function (req, res){
-      var project = req.params.project;
-      var issue = req.body._id;
-      if (!issue) {
-        res.send('_id error');
-      } else {
-        MongoClient.connect(CONNECTION_STRING, function(err, db) {
-          var collection = db.collection(project);
-          collection.findAndRemove({_id:new ObjectId(issue)},function(err,doc){
+    .delete((req, res)=>{
+      const project = req.params.project;
+      const issue = req.body._id;
+      if (!issue) { res.send('_id error'); }
+      else {
+        MongoClient.connect(CONNECTION_STRING, (err, db)=> {
+          const collection = db.collection(project);
+          collection.findAndRemove({_id:new ObjectId(issue)},(err,doc)=>{
             (!err) ? res.send('deleted '+issue) : res.send('could not delete '+issue+' '+err);
           });
         });
